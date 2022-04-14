@@ -1,0 +1,210 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="/style.css">
+
+  <style>
+    code {
+      background-color: whitesmoke;
+    }
+  </style>
+</head>
+<body>
+<header>
+</header>
+<br>
+<div id ='sampleposting'>
+
+  <h2 style="text-align: left">Test API responses</h2>
+  <div>
+    <h4>Search item</h4>
+     <form action="/api/search_item" method="post" class="border">
+      <h4>Test post to /api/search_item</h4>
+      <label for="title" >Search</label>
+      <input type="text" name="string_key" value=""><br>
+      <input type="submit" value="Search">
+    </form>
+  </div>
+  <hr>
+
+
+  <div>
+    <h4>Get countries</h4>
+    <button id='get_countries_button'>Get countries</button>
+      3 <input class='quantity_i' type="radio" name='country' value="3">
+      5 <input class='quantity_i' type="radio" name='country' checked value="5">
+      10 <input class='quantity_i' type="radio"name='country' value="10">
+    <ul id='country_list'></ul>
+    <div id="paginat_system"></div>
+  </div>
+  <hr>
+
+  <div>
+    <h4>Get satellites</h4>
+    <button id='get_satellites_button'>Get satellites</button>
+      3 <input class='quantity_n' type="radio" name='satellite' value="3">
+      5 <input class='quantity_n' type="radio" name='satellite' checked value="5">
+      10 <input class='quantity_n' type="radio"name='satellite' value="10">
+    <ul id='satellite_list'></ul>
+    <div id="paginat_system2"></div>
+  </div>
+  <hr>
+  <h4>Find country by id /api/country</h4>
+      <form action="/api/get_by_id" method="post" class="border">
+        <input type="text" name="id"><br>
+        <input type="hidden" name="type" value="country">
+        <input type="submit" value="Find info">
+      </form>
+  <hr>
+ 
+  <h4>Find satellite by id /api/satellite</h4>
+      <form action="/api/get_by_id" method="post" class="border">
+        <input type="text" name="id"><br>
+        <input type="hidden" name="type" value="satellite">
+        <input type="submit" value="Find info">
+      </form>
+  <hr>
+  <h4>Test post to /api/add_country</h4>
+  <form action="/api/add_country" method="post" class="border">
+    <label for="title" >Country</label>
+    <input type="text" id="title" name="name" value=""><br>
+    <input type="submit" value="Add country">
+  </form>
+
+  <hr>
+  <h4>Test post to /api/add_satellite</h4>
+  <form method="post" action="/api/add_satellite"  class="border">
+    <label for="sat_name">Satellite name</label>
+    <input type="text" name="sat_name" value=""><br>
+    <label for="country">Country</label>
+      <select id="country" name="country_id">
+      {{#each countries}}
+        <option value="{{_id}}">{{name}}</option>
+      {{/each}}
+      </select>
+    <input type="submit" value="Submit">
+  </form>
+
+  <hr>
+  <h4>Open List of countries</h4>
+  <button id='close_list_c'>Open list</button>
+   <ul id='country_l' class='hidden_block'>
+    {{#each countries}}
+      <li>
+        <form action="/api/delete_item/" method="post">
+          {{name}}, id: {{this._id}}
+          <input type="hidden" value="{{this._id}}" name="id">
+          <input type="hidden" value="{{this._rev}}" name="rev">
+          <input type="submit" value="Delete">
+        </form>
+    {{/each}}
+   </ul>
+
+
+  <hr>
+  <h4>Open List satellites</h4>
+  <button id='close_list_s'>Open list</button>
+   <ul id='satellite_l' class='hidden_block'>
+    {{#each satellites}}
+      <li>
+        <form action="/api/delete_item/" method="post">
+          {{name}}, id: {{this._id}}
+          <input type="hidden" value="{{this._id}}" name="id">
+          <input type="hidden" value="{{this._rev}}" name="rev">
+          <input type="submit" value="Delete">
+        </form>
+      </li>
+
+    {{/each}}
+   </ul>
+
+
+<hr style='margin: 50px'>
+<script type="module" src="/main.js"></script>
+  <script type="module">
+
+  const countries = (() => {
+    let close_button_c = document.querySelector('#close_list_c');
+    let close_button_s = document.querySelector('#close_list_s');
+    let ul_c = document.querySelector('#country_l');
+    let ul_s = document.querySelector('#satellite_l');
+    close_button_c.onclick = (e) => ul_c.classList.toggle('hidden_block');
+    close_button_s.onclick = (e) => ul_s.classList.toggle('hidden_block');
+  
+
+    function collectedFunc(listSelector, paginatSelector, inputsSelector, items_type){
+      let page_num = 1;
+      let limit = 5;
+      let quantity;
+
+      for(let i of document.querySelectorAll(inputsSelector)){
+        if(i.checked)  limit = i.value;
+      }
+        
+      get_list_items(); 
+  
+      async function get_list_items(){
+
+        let items_list = document.querySelector(listSelector);
+        items_list.innerHTML = '';
+        let params = { method: 'POST', headers: { "Content-type": "application/json" }, body: JSON.stringify({page_num, limit, items_type})};
+        const _res_json = await fetch('/api/get_items', params).then(response => response.json());
+
+        _res_json.rows.map(n => createButton(items_list, `${n.doc.name}, id: ${n.doc._id}`, 'li'));
+        quantity = _res_json.total_rows;
+
+        const funcPrev = () => {
+          page_num --; 
+          get_list_items();
+        } 
+
+        const funcNext = () => {
+          page_num ++; 
+          get_list_items();
+        }
+
+          get_pagination(paginatSelector, limit, quantity, page_num, funcPrev, funcNext);
+        }
+    }
+
+
+
+    document.querySelector('#get_countries_button').addEventListener('click', (e) => {
+        collectedFunc('#country_list', '#paginat_system', '.quantity_i',  'country')
+      })
+
+
+    document.querySelector('#get_satellites_button').addEventListener('click', (e) => {
+        collectedFunc('#satellite_list', '#paginat_system2', '.quantity_n',  'satellite')
+    })
+
+      function get_pagination(paginate_sys_selector, limit, quantity, page_num, funcPrev, funcNext){
+          let last_page = Math.ceil(quantity / limit );
+          let pag_sys = document.querySelector(paginate_sys_selector)
+          pag_sys.innerHTML = '';
+
+          if(quantity > limit && page_num > 1){
+            createButton(pag_sys, 'Prev', 'button', funcPrev);
+          }
+
+          if(quantity > limit && page_num < last_page){
+            createButton(pag_sys, 'Next', 'button', funcNext);
+          }
+        }
+
+      function createButton(par, inner, tag, func){
+          let button = document.createElement(tag);
+          par.appendChild(button);
+          button.innerHTML = inner;
+          button.onclick = func;
+        }
+
+           
+    })();
+
+
+</script>
+</body>
+</html>

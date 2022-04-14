@@ -1,0 +1,49 @@
+query{
+  getAllItems {
+   
+    ...on Satellite{
+      name, country_id
+    }
+    ...on Country{
+      name
+    }
+  }
+}
+
+
+query{
+ searchItemByName(str: "А") {
+   
+    ...on Satellite{
+      name, country_id
+    }
+    ...on Country{
+      name
+    }
+  }
+}
+
+query{
+getCountry(id:"985023ddbb7a2840a44fded76f0020aa" ) {
+    name
+  }
+}
+
+query{
+getSatellite(id:"985023ddbb7a2840a44fded76f05b1f0" ) {
+    name
+  }
+}
+
+query{
+getCountriesByPages(page_num: 2, limit_num:3 ) {
+    name
+  }
+}
+
+query{
+getSatellitesByPages(page_num: 1, limit_num:3 ) {
+    name
+  }
+}
+
