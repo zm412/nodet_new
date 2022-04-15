@@ -18,6 +18,8 @@ app.use(express.static(__dirname + '/public'));
 
 const temp = async () => {
   const dblist = await nano.db.list()
+  const doclist = await satellite_db.get('Lara',{include_docs: true})
+  console.log(doclist, 'doclist')
  // const doclist = await satellite_db.list({include_docs: true})
       /*
   const response = await satellite_db.destroy('_design/satellite_n', '3-438862191d9b62757eeffb86eba22e5f', (err, res)=>{

@@ -2,12 +2,14 @@
 var schema = `
     type Country {
         _id: ID!
+        _rev: String
         type: String!
         name: String!
         satellites: [ Satellite ]
     }
     type Satellite {
         _id: String!
+        _rev: String
         type: String!
         name: String!
         country_id: String!
@@ -16,18 +18,19 @@ var schema = `
 
 
     input CountryInput {
-        _id: ID
-        type: String!
+        _id: String! 
         name: String!
-        satellites: [ SatelliteInput ]
     }
 
     input SatelliteInput {
-        _id: ID
-        type: String!
+        _id: String! 
         name: String!
-        country_id: ID 
-        countries: [ CountryInput ]
+        country_id: String! 
+    }
+
+    input RemoveItemInput {
+        _id: String!
+        _rev: String!
     }
 
     union SearchResult = Satellite | Country
@@ -43,6 +46,9 @@ var schema = `
 
     type Mutation {
       createCountry(input: CountryInput): Country
+      createSatellite(input: SatelliteInput): Satellite 
+      deleteCountry(input: RemoveItemInput): Country 
+      deleteSatellite(input: RemoveItemInput): Satellite 
     }
 `
 

@@ -64,6 +64,7 @@ const resolvers = {
             return doc
           }
       },
+
       getCountriesByPages: async(_, args) => {
         const queryOptions = {
           reduce:false,
@@ -95,7 +96,7 @@ const resolvers = {
   }, 
    SearchResult: {
     __resolveType(obj) {
-      console.log(obj, 'obj')
+      //console.log(obj, 'obj')
       if (obj.type == 'country') {
         return 'Country';
       }
@@ -106,6 +107,54 @@ const resolvers = {
     },
   },
 
+  Mutation: {
+
+   createCountry: async(_, args) => {
+     console.log(args, 'args')
+    let data = { type: 'country', name: args.input.name };
+    const doc = await satellite_db.insert(data, args.input._id);
+     console.log(doc, 'NEWCOUNTRY')
+    return doc;
+ },
+
+   createSatellite: async(_, args) => {
+     console.log(args, 'args')
+    let data = { type: 'satellite', name: args.input.name, country_id: args.input.country_id };
+    const doc = await satellite_db.insert(data, args.input._id);
+     console.log(doc, 'NEWSatellite')
+    return doc;
+ },
+
+  deleteCountry: async(_, args) => {
+   const doc = await satellite_db.destroy(args.input._id, args.input._rev, (err, res)=>{
+     console.log(err, 'err')
+     console.log(res, 'res')
+   })
+
+     console.log(args, 'args')
+      const q = {
+         "selector": {
+            "_id": { "$gt": null },
+            "country_id": args.input._id 
+           }
+        }
+      let doclist1 = await satellite_db.find(q);
+    for(let i of doclist1.docs){
+      await satellite_db.destroy(i._id, i._rev)
+    }
+
+      console.log(doclist1, 'doc')
+    return doc;
+ },
+   deleteSatellite: async(_, args) => {
+      const doc = await satellite_db.destroy(args.input._id, args.input._rev, (err, res)=>{
+      console.log(err, 'err')
+      console.log(res, 'res')
+  })
+    return doc;
+ },
+
+  }
 
 };
 

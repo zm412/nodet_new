@@ -47,3 +47,14 @@ getSatellitesByPages(page_num: 1, limit_num:3 ) {
   }
 }
 
+
+mutation{
+  createCountry(input: {name: "Victory"})
+}
+
+mutation{
+  createCountry(input: {_id: "Lara", name: "LaraCroft"}){
+    name
+  }
+}
+
