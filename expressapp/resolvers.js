@@ -94,7 +94,7 @@ const resolvers = {
 
    createCountry: async(_, args) => {
      console.log(args, 'args')
-    let data = { type: 'country', name: args.input.name };
+    let data = { type: 'country', name: args.input.name, satellites_id: [] };
     const doc = await satellite_db.insert(data, args.input._id);
      console.log(doc, 'NEWCOUNTRY')
     return doc;
@@ -102,8 +102,54 @@ const resolvers = {
 
    createSatellite: async(_, args) => {
      console.log(args, 'args')
-    let data = { type: 'satellite', name: args.input.name, country_id: args.input.country_id };
-    const doc = await satellite_db.insert(data, args.input._id);
+     let newarr=[]
+     const q = {
+         "selector": {
+           "_id":{
+              "$or": args.input.country_id
+           }
+           }
+        }
+      let doclist1 = await satellite_db.find(q);
+
+     console.log(doclist1, 'validatedarr')
+     if(doclist1.docs.length > 0){
+
+      let data = { type: 'satellite', name: args.input.name, country_id: doclist1.docs.map(n=>n._id) };
+       console.log(data, 'data')
+
+      satellite_db.insert(data, args.input._id).then(n => {
+        doclist1.docs.map(info => {
+          let arr = Array.from(info.satellites_id);
+          console.log(arr, 'arr')
+          //let countryData = { _id: info._id, _rev: info._rev, satellites_id: arr.push(n._id) };
+          let countryData = Object.assign({}, info);
+          console.log(n.id, 'n')
+          console.log(typeof countryData.satellites_id, 'type')
+          countryData.satellites_id = arr.concat([n.id])
+          console.log(countryData, 'cdata')
+          satellite_db.insert(countryData).then(doc => console.log(doc, 'doc'))
+            .catch(err => console.log(err, 'err'))
+        })
+
+      }).catch(err => console.log(err, 'err'))
+     }
+/*
+     let validated_arr = args.input.country_id.map((n) => {
+     //  let temp = satellite_db.get(n).then(d => d)
+      // console.log(temp, 'temp')
+       //       })
+   if(await validated_arr.length > 0){
+      let data = { type: 'satellite', name: args.input.name, country_id: validated_arr.map(n=>n._id) };
+      satellite_db.insert(data, args.input._id).then(n => {
+        validated_arr.map(info => {
+          let countryData = { _id: info._id, _rev: info._rev, satellite_id: info.satellite_id.push(n._id) };
+           satellite_db.insert(countryData).then(doc => console.log(doc, 'doc'))
+            .catch(err => console.log(err, 'err'))
+        })
+      }).catch(err => console.log(err, 'err'))
+   }
+   */
      console.log(doc, 'NEWSatellite')
     return doc;
  },

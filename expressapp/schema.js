@@ -15,7 +15,7 @@ var schema = `
         count: Int 
         type: String!
         name: String!
-        country_id: [ID!]
+        country_id: [ID]
         countries: [ Country ]
     }
 
@@ -28,7 +28,7 @@ var schema = `
     input SatelliteInput {
         _id: ID! 
         name: String!
-        country_id: String! 
+        country_id: [ID!] 
     }
 
     input RemoveItemInput {

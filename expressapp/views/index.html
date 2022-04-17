@@ -78,16 +78,19 @@
   </form>
 
   <hr>
-  <h4>Test post to /api/add_satellite</h4>
+  <h4>Add satellite</h4>
   <form method="post" action="/api/add_satellite"  class="border">
     <label for="sat_name">Satellite name</label>
-    <input type="text" name="sat_name" value=""><br>
+    <input type="text" name="sat_id" value="" placeholder="name"><br>
+    <input type="text" name="sat_name" value="" placeholder="id"><br>
     <label for="country">Country</label>
-      <select id="country" name="country_id">
-      {{#each countries}}
-        <option value="{{_id}}">{{name}}</option>
-      {{/each}}
+      <select id="country" name="country"> </select>
+      <select id="country1" name="country1">
+        <option value="null" selected>---</option>
       </select>
+      <select id="country2" name="country2"> 
+        <option value="null" selected>---</option>
+      </select><br>
     <input type="submit" value="Submit">
   </form>
 
@@ -150,7 +153,9 @@
       console.log(set_country, set_satellite, 'data')
       console.log(set_country, 'countries')
       showList(set_country, document.querySelector('#country_l') , 'country');
-      getOptions(set_country)
+      getOptions(set_country, '#country')
+      getOptions(set_country, '#country1')
+      getOptions(set_country, '#country2')
     })
 
 function fetchDataPost(obj){
@@ -210,13 +215,13 @@ document.querySelector('#add_country').onsubmit = (e) => {
 }
 
 
-function getOptions(arr){
+function getOptions(arr, selectorSelect){
   console.log(arr, 'arr')
    let elemsList = arr.reduce((str, n) => {
       return str += `
-        <option value="${n._id}">${n.name}</option>
+        <option value="${n._id}" data-rev="${n._rev}">${n.name}</option>
     `}, '')
-  document.querySelector('#country').innerHTML = elemsList
+  document.querySelector(selectorSelect).innerHTML += elemsList
 }
 
 
