@@ -20,12 +20,14 @@
   <h2 style="text-align: left">Test API responses</h2>
   <div>
     <h4>Search item</h4>
-     <form action="/api/search_item" method="post" class="border">
+     <form action="" id='search_form' class="border">
       <h4>Test post to /api/search_item</h4>
       <label for="title" >Search</label>
-      <input type="text" name="string_key" value=""><br>
-      <input type="submit" value="Search">
+      <input type="text" id='search_key' name="string_key" value=""><br>
+      <input type="submit" id='button_search' value="Search">
     </form>
+    <ul id='search_list'>
+    </ul>
   </div>
   <hr>
 
@@ -51,25 +53,27 @@
     <div id="paginat_system2"></div>
   </div>
   <hr>
-  <h4>Find country by id /api/country</h4>
-      <form action="/api/get_by_id" method="post" class="border">
-        <input type="text" name="id"><br>
-        <input type="hidden" name="type" value="country">
+  <h4>Find country by id</h4>
+      <form id="get_country" class="border">
+        <input type="text" id='id_country' name="id"><br>
         <input type="submit" value="Find info">
       </form>
+      <div id="country_info"></div>
+      <ul id="c_satellites"></ul>
   <hr>
  
-  <h4>Find satellite by id /api/satellite</h4>
-      <form action="/api/get_by_id" method="post" class="border">
-        <input type="text" name="id"><br>
-        <input type="hidden" name="type" value="satellite">
+  <h4>Find satellite by id</h4>
+      <form action="" id="get_satellite" method="post" class="border">
+        <input type="text" id='id_satellite' name="id"><br>
         <input type="submit" value="Find info">
       </form>
+      <div id="satellite_info"></div>
   <hr>
-  <h4>Test post to /api/add_country</h4>
-  <form action="/api/add_country" method="post" class="border">
+  <h4>Add country</h4>
+  <form action="" id="add_country" class="border">
     <label for="title" >Country</label>
-    <input type="text" id="title" name="name" value=""><br>
+    <input type="text" id="spec_id_country" name="id" value="" placeholder="id"><br>
+    <input type="text" id="name_country" name="name" value="" placeholder="name"><br>
     <input type="submit" value="Add country">
   </form>
 
@@ -111,8 +115,8 @@
       <li>
         <form action="/api/delete_item/" method="post">
           {{name}}, id: {{this._id}}
-          <input type="hidden" value="{{this._id}}" name="id">
-          <input type="hidden" value="{{this._rev}}" name="rev">
+          <input type="hidden" value="{{this._id}}" name="id" placeholder="id">
+          <input type="hidden" value="{{this._rev}}" name="rev" placeholder="name">
           <input type="submit" value="Delete">
         </form>
       </li>
@@ -122,87 +126,99 @@
 
 
 <hr style='margin: 50px'>
+
+
 <script type="module" src="/main.js"></script>
   <script type="module">
 
-  const countries = (() => {
-    let close_button_c = document.querySelector('#close_list_c');
-    let close_button_s = document.querySelector('#close_list_s');
-    let ul_c = document.querySelector('#country_l');
-    let ul_s = document.querySelector('#satellite_l');
-    close_button_c.onclick = (e) => ul_c.classList.toggle('hidden_block');
-    close_button_s.onclick = (e) => ul_s.classList.toggle('hidden_block');
-  
-
-    function collectedFunc(listSelector, paginatSelector, inputsSelector, items_type){
-      let page_num = 1;
-      let limit = 5;
-      let quantity;
-
-      for(let i of document.querySelectorAll(inputsSelector)){
-        if(i.checked)  limit = i.value;
-      }
-        
-      get_list_items(); 
-  
-      async function get_list_items(){
-
-        let items_list = document.querySelector(listSelector);
-        items_list.innerHTML = '';
-        let params = { method: 'POST', headers: { "Content-type": "application/json" }, body: JSON.stringify({page_num, limit, items_type})};
-        const _res_json = await fetch('/api/get_items', params).then(response => response.json());
-
-        _res_json.rows.map(n => createButton(items_list, `${n.doc.name}, id: ${n.doc._id}`, 'li'));
-        quantity = _res_json.total_rows;
-
-        const funcPrev = () => {
-          page_num --; 
-          get_list_items();
-        } 
-
-        const funcNext = () => {
-          page_num ++; 
-          get_list_items();
-        }
-
-          get_pagination(paginatSelector, limit, quantity, page_num, funcPrev, funcNext);
-        }
-    }
-
-
-
-    document.querySelector('#get_countries_button').addEventListener('click', (e) => {
-        collectedFunc('#country_list', '#paginat_system', '.quantity_i',  'country')
-      })
-
-
-    document.querySelector('#get_satellites_button').addEventListener('click', (e) => {
-        collectedFunc('#satellite_list', '#paginat_system2', '.quantity_n',  'satellite')
+    let set_country, set_satellite;
+    let obj = {query: `{
+            getAllItems {
+              ...on Satellite{
+                _id, _rev, type, name, country_id
+              }
+              ...on Country{
+                _id, _rev, type, name
+              }
+            }
+          }
+      `}
+    fetchDataPost(obj).then(doc => {
+      let n = doc.data.getAllItems;
+      set_country = n.filter(n => n.type == 'country')
+      set_satellite = n.filter(n => n.type == 'satellite')
+      console.log(set_country, set_satellite, 'data')
+      console.log(set_country, 'countries')
+      showList(set_country, document.querySelector('#country_l') , 'country');
+      getOptions(set_country)
     })
 
-      function get_pagination(paginate_sys_selector, limit, quantity, page_num, funcPrev, funcNext){
-          let last_page = Math.ceil(quantity / limit );
-          let pag_sys = document.querySelector(paginate_sys_selector)
-          pag_sys.innerHTML = '';
+function fetchDataPost(obj){
+  return fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(obj)
+  })
+    .then(r => r.json())
+}
 
-          if(quantity > limit && page_num > 1){
-            createButton(pag_sys, 'Prev', 'button', funcPrev);
-          }
+function showList(arr, par, type){
+    let elemsList = arr.reduce((str, n) => {
+      return str += `
+    <li> ${n.name},  id: ${n._id} <input type="submit" data-id="${n._id}" class='del_item' data-rev="${n._rev}" value="Delete"> </li>
+    `}, '')
 
-          if(quantity > limit && page_num < last_page){
-            createButton(pag_sys, 'Next', 'button', funcNext);
-          }
+    par.innerHTML = elemsList;
+
+  for(let elem of document.querySelectorAll('.del_item')){
+    elem.onclick = deleteItem;
+  }
+
+
+  function deleteItem(e){
+    let _id = e.target.dataset.id;
+    let _rev = e.target.dataset.rev;
+    let sample = type == 'country'? 'deleteCountry': 'deleteSatellite' ;
+    let query = `mutation ${sample}($_id: ID!, $_rev: String!){
+      ${sample}(input: { _id: $_id, _rev: $_rev }){
+          name
         }
+    }`;
+    
+    let param_obj = {query, variables: { _id, _rev }};
+    fetchDataPost(param_obj).then(doc => {console.log(doc, 'lLLLLLKJLKJLJLJLJ')})
+  }
 
-      function createButton(par, inner, tag, func){
-          let button = document.createElement(tag);
-          par.appendChild(button);
-          button.innerHTML = inner;
-          button.onclick = func;
-        }
 
-           
-    })();
+}
+
+document.querySelector('#add_country').onsubmit = (e) => {
+  e.preventDefault();
+  let _id = document.querySelector('#spec_id_country').value;
+  let name = document.querySelector('#name_country').value;
+  
+  let query = `mutation createCountry($_id: ID!, $name: String!){
+    createCountry(input: { _id: $_id, name: $name }){
+        name
+      }
+  }`;
+  let param_obj = {query, variables: { _id, name }};
+  fetchDataPost(param_obj).then(doc => {console.log(doc, 'lLLLLLKJLKJLJLJLJ')})
+}
+
+
+function getOptions(arr){
+  console.log(arr, 'arr')
+   let elemsList = arr.reduce((str, n) => {
+      return str += `
+        <option value="${n._id}">${n.name}</option>
+    `}, '')
+  document.querySelector('#country').innerHTML = elemsList
+}
+
 
 
 </script>

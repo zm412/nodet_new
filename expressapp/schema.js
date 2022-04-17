@@ -3,33 +3,36 @@ var schema = `
     type Country {
         _id: ID!
         _rev: String
+        count: Int 
         type: String!
         name: String!
+        satellites_id: [ID]
         satellites: [ Satellite ]
     }
     type Satellite {
-        _id: String!
+        _id: ID!
         _rev: String
+        count: Int 
         type: String!
         name: String!
-        country_id: String!
+        country_id: [ID!]
         countries: [ Country ]
     }
 
 
     input CountryInput {
-        _id: String! 
+        _id: ID! 
         name: String!
     }
 
     input SatelliteInput {
-        _id: String! 
+        _id: ID! 
         name: String!
         country_id: String! 
     }
 
     input RemoveItemInput {
-        _id: String!
+        _id: ID!
         _rev: String!
     }
 
@@ -40,7 +43,7 @@ var schema = `
       getCountry(id: ID): Country 
       getSatellite(id: ID): Satellite
       getSatellitesByPages(page_num: Int!, limit_num: Int!): [ Satellite ]
-      getCountriesByPages(page_num: Int!, limit_num: Int!): [ Satellite ]
+      getCountriesByPages(page_num: Int!, limit_num: Int!): [ Country ]
       searchItemByName(str: String): [ SearchResult ]
     }
 

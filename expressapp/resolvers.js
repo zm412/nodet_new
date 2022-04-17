@@ -1,6 +1,8 @@
 var nano = require('nano')('http://admin:4455@db:5984');
 var satellite_db = nano.use('satellite_db');
 
+
+
 const resolvers = {
 
  
@@ -13,7 +15,7 @@ const resolvers = {
       }
       let doc = await satellite_db.view('satellite_n', 'all_data_type', queryOptions)
 
-      console.log(doc, 'doclist')
+      //console.log(doc, 'doclist')
       return doc.rows.map(n=>n.doc);
     },
 
@@ -32,8 +34,9 @@ const resolvers = {
         },
 
       getCountry: async(_, args) => {
-        console.log(args, 'id')
+        console.log(args.id, 'id')
         const doc = await satellite_db.get(args.id, {include_docs: true});
+        console.log(doc, 'doc')
         if(doc.type == 'country'){
           name = doc.name;
           const q = {
@@ -66,33 +69,13 @@ const resolvers = {
       },
 
       getCountriesByPages: async(_, args) => {
-        const queryOptions = {
-          reduce:false,
-          limit: args.limit_num,
-          skip:(args.page_num-1 )*args.limit_num,
-          include_docs: true
-        };
-
-        const doclist = await satellite_db.view( 'satellite_n', 'by_country', queryOptions);
-        //console.log(doclist.rows.map(n=>n.doc), 'doclist')
-        return doclist.rows.map(n=> n.doc);
+        return getItemsByPage('satellite_n', 'by_country', args.page_num, args.limit_num)
       },
-
 
       getSatellitesByPages: async(_, args) => {
-        const queryOptions = {
-          reduce:false,
-          limit: args.limit_num,
-          skip:(args.page_num-1 )*args.limit_num,
-          include_docs: true
-        };
+        return getItemsByPage('satellite_n', 'by_satellite', args.page_num, args.limit_num)
+      } 
 
-        const doclist = await satellite_db.view( 'satellite_n', 'by_satellite', queryOptions);
-        //console.log(doclist.rows.map(n=>n.doc), 'doclist')
-        return doclist.rows.map(n=> n.doc);
-      },
-
- 
   }, 
    SearchResult: {
     __resolveType(obj) {
@@ -131,7 +114,7 @@ const resolvers = {
      console.log(res, 'res')
    })
 
-     console.log(args, 'args')
+    /*
       const q = {
          "selector": {
             "_id": { "$gt": null },
@@ -142,6 +125,7 @@ const resolvers = {
     for(let i of doclist1.docs){
       await satellite_db.destroy(i._id, i._rev)
     }
+    */
 
       console.log(doclist1, 'doc')
     return doc;
@@ -157,6 +141,24 @@ const resolvers = {
   }
 
 };
+
+async function getItemsByPage(view_family_name, view_name, page_num, limit_num){
+  const queryOptions = {
+    reduce:false,
+    limit: limit_num,
+    skip:(page_num-1 )*limit_num,
+    include_docs: true
+  };
+
+  const doclist = await satellite_db.view(view_family_name, view_name, queryOptions);
+  let temp =[];
+  for(let i of doclist.rows){
+    let obj = i.doc;
+    obj.count = doclist.total_rows;
+    temp.push(obj)
+  }
+  return temp 
+}
 
 module.exports = resolvers;
 

@@ -1,22 +1,175 @@
 
-import { ApolloClient, InMemoryCache, gql } from "./node_modules/@apollo/client";
-//import ApolloClient from 'apollo-boost';
-console.log(qql, 'APP')
-console.log("hello", 'APP')
-
-const client = new ApolloClient({
-  uri: 'http://localhost:5000/graphql',
-  cache: new InMemoryCache()
-})
-
-console.log(client, 'APP')
-
-client
-  .query({
-    query: gql`
-      query getAllItems {
-        id, name
-     }
-    `
+function fetchDataPost(obj){
+  return fetch('/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(obj)
   })
-  .then(result => console.log(result, 'result'));
+    .then(r => r.json())
+}
+  const countries = (() => {
+    let close_button_c = document.querySelector('#close_list_c');
+    let close_button_s = document.querySelector('#close_list_s');
+    let ul_c = document.querySelector('#country_l');
+    let ul_s = document.querySelector('#satellite_l');
+    close_button_c.onclick = (e) => ul_c.classList.toggle('hidden_block');
+    close_button_s.onclick = (e) => ul_s.classList.toggle('hidden_block');
+  
+
+    function collectedFunc(listSelector, paginatSelector, inputsSelector, items_type){
+      let page_num = 1;
+      let limit = 5;
+      let quantity;
+
+      for(let i of document.querySelectorAll(inputsSelector)){
+        if(i.checked)  limit = i.value;
+      }
+        
+      get_list_items(); 
+  
+      async function get_list_items(){
+
+        let items_list = document.querySelector(listSelector);
+        items_list.innerHTML = '';
+        let sample = items_type == 'country'? 'getCountriesByPages': 'getSatellitesByPages' ;
+         
+        let query = `query ${sample}($page_num: Int!, $limit: Int!){
+          ${sample}(page_num: $page_num, limit_num: $limit){
+              _id, name, type, count
+            }
+        }`;
+
+        let param_obj = {query, variables: { page_num: Number(page_num), limit: Number(limit) }};
+
+        const _res_json = fetchDataPost(param_obj).then(doc => {
+console.log(doc.data[sample][0].count)
+            doc.data[sample].map(n => createButton(items_list, `${n.name}, id: ${n._id}`, 'li'));
+            quantity = doc.data[sample][0].count;
+            get_pagination(paginatSelector, limit, quantity, page_num, funcPrev, funcNext);
+console.log(quantity, 'quantity')
+        })
+
+        const funcPrev = () => {
+          page_num --; 
+          get_list_items();
+        } 
+
+        const funcNext = () => {
+          page_num ++; 
+          get_list_items();
+        }
+
+console.log(quantity, 'quant')
+        }
+    }
+
+
+
+    document.querySelector('#get_countries_button').addEventListener('click', (e) => {
+        collectedFunc('#country_list', '#paginat_system', '.quantity_i',  'country')
+      })
+
+
+    document.querySelector('#get_satellites_button').addEventListener('click', (e) => {
+        collectedFunc('#satellite_list', '#paginat_system2', '.quantity_n',  'satellite')
+    })
+
+
+      function get_pagination(paginate_sys_selector, limit, quantity, page_num, funcPrev, funcNext){
+          let last_page = Math.ceil(quantity / limit );
+          let pag_sys = document.querySelector(paginate_sys_selector)
+          pag_sys.innerHTML = '';
+
+          if(quantity > limit && page_num > 1){
+            createButton(pag_sys, 'Prev', 'button', funcPrev);
+          }
+
+          if(quantity > limit && page_num < last_page){
+            createButton(pag_sys, 'Next', 'button', funcNext);
+          }
+        }
+
+      function createButton(par, inner, tag, func){
+          let button = document.createElement(tag);
+          par.appendChild(button);
+          button.innerHTML = inner;
+          button.onclick = func;
+        }
+
+      document.querySelector('#search_form').onsubmit = (e) => {
+          let ul = document.querySelector('#search_list');
+          ul.innerHTML = '';
+          e.preventDefault();
+          let sample = 'searchItemByName';
+          let str = document.querySelector('#search_key').value;
+          console.log(str, 'str')
+          let query = `query ${sample}($str: String!){
+            ${sample}(str: $str){
+              ...on Satellite{
+                _id, name, country_id
+              }
+              ...on Country{
+                _id, name
+              }
+            }
+        }`;
+
+        let param_obj = {query, variables: { str }};
+        fetchDataPost(param_obj).then(doc => {
+console.log(doc, 'doc')
+            doc.data[sample].map(n => createButton(ul, `${n.name}, id: ${n._id}`, 'li'));
+        })
+
+      }
+
+      document.querySelector("#get_country").onsubmit = (e) => {
+        e.preventDefault();
+        let div = document.querySelector('#country_info');
+        div.innerHTML = '';
+        let sample = 'getCountry';
+        let id = document.querySelector('#id_country').value;
+        let query = `query ${sample}($id: ID!){
+          ${sample}(id: $id){
+            name, _id, satellites {
+                name, _id
+            }
+
+          }
+      }`;
+
+        let param_obj = {query, variables: { id }};
+          fetchDataPost(param_obj).then(doc => {
+          console.log(doc, 'doc')
+          let n = doc.data[sample];
+          createButton(div, `${n.name}, id: ${n._id}`, 'p');
+          if(n.satellites.length > 0){
+            n.satellites.map(p => createButton(div, `${p.name}, id: ${p._id}`, 'em'))
+          }
+        })
+      }
+           
+    document.querySelector("#get_satellite").onsubmit = (e) => {
+        e.preventDefault();
+        let div = document.querySelector('#satellite_info');
+        div.innerHTML = '';
+        let sample = 'getSatellite';
+        let id = document.querySelector('#id_satellite').value;
+        let query = `query ${sample}($id: ID!){
+          ${sample}(id: $id){
+            name, _id
+          }
+      }`;
+
+        let param_obj = {query, variables: { id }};
+          fetchDataPost(param_obj).then(doc => {
+          let n = doc.data[sample];
+          createButton(div, `${n.name}, id: ${n._id}`, 'span');
+        })
+      }
+      
+    })();
+
+

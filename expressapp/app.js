@@ -18,8 +18,8 @@ app.use(express.static(__dirname + '/public'));
 
 const temp = async () => {
   const dblist = await nano.db.list()
-  const doclist = await satellite_db.get('Lara',{include_docs: true})
-  console.log(doclist, 'doclist')
+  //const doclist = await satellite_db.get('Lara',{include_docs: true})
+  //console.log(doclist, 'doclist')
  // const doclist = await satellite_db.list({include_docs: true})
       /*
   const response = await satellite_db.destroy('_design/satellite_n', '3-438862191d9b62757eeffb86eba22e5f', (err, res)=>{
@@ -54,7 +54,7 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true,
   schema: makeExecutableSchema({
     typeDefs: schema,
-    resolvers: resolvers
+    resolvers: resolvers,
   }),
 }))
 
@@ -65,6 +65,8 @@ app.engine('html', require('hbs').__express);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-
+app.get("/", async function(req, res){
+  res.render('index')
+});
 
 app.listen(5000);

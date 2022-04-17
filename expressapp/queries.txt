@@ -57,4 +57,20 @@ mutation{
     name
   }
 }
+mutation{
+  createSatellite(input: {_id: "Temp", name: "TempS", country_id:"Lara"}){
+    name
+  }
+}
+mutation{
+  deleteSatellite(input: {_id: "Temp",_rev:"1-724cb4da5056b886202b3ed7981a9859"}){
+    name
+  }
+}
+mutation{
+  deleteCountry(input: { _id:"Lara", _rev: "1-9a4d7d008d45d2b982edf6b7f3aff6fb"}){
+  name
+  }
+}
+
 
