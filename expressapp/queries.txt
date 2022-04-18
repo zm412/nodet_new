@@ -1,15 +1,29 @@
+
 query{
   getAllItems {
-   
+
     ...on Satellite{
-      name, country_id
+     _id, _rev, name, country_id
     }
     ...on Country{
-      name
+      _id, _rev,  name
     }
   }
 }
 
+
+mutation{
+  createSatellite(input: {_id: "sat1", name: "Hellas Sat 2", country_id:["30", "357"]}){
+    name
+  }
+}
+
+
+mutation{
+  deleteSatellite(input: {_id: "Temp",_rev:"1-724cb4da5056b886202b3ed7981a9859"}){
+    name
+  }
+}
 
 query{
  searchItemByName(str: "А") {
@@ -62,8 +76,42 @@ mutation{
     name
   }
 }
+
+mutation{
+  deleteCountry(input: { _id:"Lara", _rev: "1-9a4d7d008d45d2b982edf6b7f3aff6fb"}){
+  name
+  }
+}
+
+
 mutation{
   deleteSatellite(input: {_id: "Temp",_rev:"1-724cb4da5056b886202b3ed7981a9859"}){
+    name
+  }
+}
+VM56:2 Uncaught SyntaxError: Unexpected token '{'
+
+mutation{
+  createSatellite(input: {_id: "sat1", name: "Hellas Sat 2", country_id:["30", "357"]}){
+    name
+  }
+}
+
+
+query{
+  getAllItems {
+
+    ...on Satellite{
+     _id, _rev, name, country_id
+    }
+    ...on Country{
+      _id, _rev,  name
+    }
+  }
+}
+
+mutation{
+  deleteSatellite(input: {_id: "sat1",_rev:"3-54e719a62fe18e31d4e1a9a733afa81f"}){
     name
   }
 }
@@ -72,5 +120,25 @@ mutation{
   name
   }
 }
+VM221:2 Uncaught SyntaxError: Unexpected token '{'
 
 
+query{
+  getAllItems {
+
+    ...on Satellite{
+     _id, _rev, name, country_id
+    }
+    ...on Country{
+      _id, _rev,  name, satellites_id
+    }
+  }
+}
+
+VM318:3 Uncaught SyntaxError: Unexpected token '{'
+
+mutation{
+  deleteSatellite(input: {_id: "sat1",_rev:"11-63673fc79cb4ef843a586075d2d7e466"}){
+    name
+  }
+}

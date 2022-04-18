@@ -6,8 +6,7 @@ var schema = `
         count: Int 
         type: String!
         name: String!
-        satellites_id: [ID]
-        satellites: [ Satellite ]
+        satellites: [Satellite]
     }
     type Satellite {
         _id: ID!
@@ -16,7 +15,7 @@ var schema = `
         type: String!
         name: String!
         country_id: [ID]
-        countries: [ Country ]
+        countries: [ Country!]
     }
 
 

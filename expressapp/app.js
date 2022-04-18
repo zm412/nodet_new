@@ -1,8 +1,6 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 const path = require('path');
-var cors = require('cors');
-const hbs = require('hbs');
 var nano = require('nano')('http://admin:4455@db:5984');
 var satellite_db = nano.use('satellite_db');
 const { graphqlHTTP } = require("express-graphql");
@@ -10,17 +8,21 @@ const schema = require('./schema');
 const resolvers = require('./resolvers');
 const fs=require("fs")
 const { makeExecutableSchema } = require('@graphql-tools/schema')
+const  { GraphQLObjectType, GraphQLList,GraphQLInt, GraphQLError } = require('graphql');
+const hbs = require('hbs');
 
 
 const app = express();
 app.use(express.static(__dirname + '/public'));
 
-
+app.set('view engine', 'html');
+app.engine('html', require('hbs').__express);
 const temp = async () => {
   const dblist = await nano.db.list()
   //const doclist = await satellite_db.get('Lara',{include_docs: true})
   const doclist = await satellite_db.list({include_docs: true})
-  console.log(doclist.rows.map(n=>n.doc), 'doclist')
+  //console.log(doclist.rows.map(n=>n.doc), 'doclist')
+
       /*
   const response = await satellite_db.destroy('_design/satellite_n', '3-438862191d9b62757eeffb86eba22e5f', (err, res)=>{
     console.log(err, 'err')
@@ -58,10 +60,7 @@ app.use('/graphql', graphqlHTTP({
   }),
 }))
 
-app.use(cors())
 
-app.set('view engine', 'html');
-app.engine('html', require('hbs').__express);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 

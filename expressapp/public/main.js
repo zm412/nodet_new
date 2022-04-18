@@ -11,14 +11,7 @@ function fetchDataPost(obj){
     .then(r => r.json())
 }
   const countries = (() => {
-    let close_button_c = document.querySelector('#close_list_c');
-    let close_button_s = document.querySelector('#close_list_s');
-    let ul_c = document.querySelector('#country_l');
-    let ul_s = document.querySelector('#satellite_l');
-    close_button_c.onclick = (e) => ul_c.classList.toggle('hidden_block');
-    close_button_s.onclick = (e) => ul_s.classList.toggle('hidden_block');
-  
-
+    
     function collectedFunc(listSelector, paginatSelector, inputsSelector, items_type){
       let page_num = 1;
       let limit = 5;
