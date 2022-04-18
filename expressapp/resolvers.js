@@ -102,7 +102,6 @@ const resolvers = {
 
    createSatellite: async(_, args) => {
      console.log(args, 'args')
-     let newarr=[]
      const q = {
          "selector": {
            "_id":{
@@ -131,6 +130,8 @@ const resolvers = {
           satellite_db.insert(countryData).then(doc => console.log(doc, 'doc'))
             .catch(err => console.log(err, 'err'))
         })
+        console.log(n, 'NEWSatellite')
+        return n
 
       }).catch(err => console.log(err, 'err'))
      }
@@ -150,8 +151,6 @@ const resolvers = {
       }).catch(err => console.log(err, 'err'))
    }
    */
-     console.log(doc, 'NEWSatellite')
-    return doc;
  },
 
   deleteCountry: async(_, args) => {
@@ -177,11 +176,43 @@ const resolvers = {
     return doc;
  },
    deleteSatellite: async(_, args) => {
-      const doc = await satellite_db.destroy(args.input._id, args.input._rev, (err, res)=>{
-      console.log(err, 'err')
-      console.log(res, 'res')
-  })
-    return doc;
+     satellite_db.get(args.input._id).then(satellite => {
+       console.log(satellite, 'sate')
+       satellite_db.destroy(args.input._id, args.input._rev).then(deleted_sat => {
+
+           const q = {
+             "selector": {
+               "_id":{
+                  "$or": Array.from(satellite.country_id)
+               }
+               }
+            }
+             
+           let doclist1 = satellite_db.find(q).then(countries => {
+             if(countries.docs.length > 0){
+               countries.docs.map(country => {
+                  let arr = Array.from(country.satellites_id);
+                    console.log(arr, 'arr')
+                  let countryData = Object.assign({}, country);
+                    console.log(typeof countryData.satellites_id, 'type')
+                  let index = arr.indexOf(satellite._id, 0);
+                  arr.splice(index, 1);
+                    console.log(arr, 'arr')
+                  countryData.satellites_id = arr; 
+                    console.log(countryData, 'cdata')
+                  satellite_db.insert(countryData).then(doc => console.log(doc, 'doc'))
+                      .catch(err => console.log(err, 'err'))  
+               })
+
+             }
+           });
+
+       })
+
+
+        //const doclist = await satellite_db.destroy(args.input._id)
+        //return doclist;
+   })
  },
 
   }
