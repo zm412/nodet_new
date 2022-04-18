@@ -34,6 +34,7 @@ function fetchDataPost(obj){
               _id, name, type, count
             }
         }`;
+        console.log(query, 'query')
 
         let param_obj = {query, variables: { page_num: Number(page_num), limit: Number(limit) }};
 
@@ -139,7 +140,7 @@ console.log(doc, 'doc')
           let n = doc.data[sample];
           createButton(div, `${n.name}, id: ${n._id}`, 'p');
           if(n.satellites.length > 0){
-            n.satellites.map(p => createButton(div, `${p.name}, id: ${p._id}`, 'em'))
+            n.satellites.map(p => createButton(div, `${p.name}, id: ${p._id}`, 'li'))
           }
         })
       }
@@ -152,14 +153,20 @@ console.log(doc, 'doc')
         let id = document.querySelector('#id_satellite').value;
         let query = `query ${sample}($id: ID!){
           ${sample}(id: $id){
+            name, _id, countries {
             name, _id
+            }
           }
       }`;
 
         let param_obj = {query, variables: { id }};
           fetchDataPost(param_obj).then(doc => {
+            console.log(doc, 'doc')
           let n = doc.data[sample];
           createButton(div, `${n.name}, id: ${n._id}`, 'span');
+          if(n.countries.length > 0){
+            n.countries.map(p => createButton(div, `${p.name}, id: ${p._id}`, 'li'))
+          }
         })
       }
       

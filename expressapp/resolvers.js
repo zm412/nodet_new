@@ -36,43 +36,30 @@ const resolvers = {
       getCountry: async(_, args) => {
         console.log(args.id, 'id')
         const doc = await satellite_db.get(args.id, {include_docs: true});
-        return satellite_db.get(args.id, {include_docs: true}).then(country => {
+        console.log(doc, 'doc')
+
 
          const q = {
              "selector": {
                "countries":{
-                 "$elemMatch":country
+                 "$elemMatch":doc
                }
                }
             }
-          country.satellites = satellite_db.find(q).then(satellites => {
-            return satellites.docs
-          })
-          return country
-        })
-        .catch(err => err)
 
-
+          let satellites = await satellite_db.find(q);
+          doc.satellites =  satellites.docs
+          console.log(doc, 'country')
+          return doc;
       },
 
       getSatellite: async(_, args) => {
         const doc = await satellite_db.get(args.id, {include_docs: true});
-          if(doc.type == 'satellite'){
-              const q = {
-                selector: {
-                  _id : doc.country_id 
-                },
-              };
-
-             const country = await satellite_db.get(doc.country_id, {include_docs: true});
-            doc.countries = [ country ]
-            console.log(doc, 'doc')
-             //return { 'country_name': [country.name], 'satellites': [doc] };
-            return doc
-          }
+        return doc
       },
 
       getCountriesByPages: async(_, args) => {
+        console.log(args, 'args1')
         return getItemsByPage('satellite_n', 'by_country', args.page_num, args.limit_num)
       },
 
@@ -146,11 +133,13 @@ const resolvers = {
         satellite_db.find(q).then(satellites => {
           satellites.docs.map(async satellite => {
             let new_countries_set = satellite.countries.filter((n, i) => n._id != args.input._id)
-            let new_data = {_id:satellite._id, _rev:satellite._rev,  type: satellite.type, name: satellite.name, countries: new_countries_set } 
-            console.log(new_data, 'newdata')
-            let doc = await satellite_db.insert(new_data )
-            console.log(doc, 'doc')
-            //console.log(new_countries_set, 'newset')
+            console.log(new_countries_set, 'LLLLLLLLLLLLLL')
+            if(new_countries_set.length == 0 ){
+              satellite_db.destroy(satellite._id, satellite._rev ).then(d => console.log(d)).catch(err => console.log(err))
+            }else{
+              let new_data = {_id:satellite._id, _rev:satellite._rev,  type: satellite.type, name: satellite.name, countries: new_countries_set } 
+              let doc = await satellite_db.insert(new_data )
+            }
           })
 
           })
@@ -181,12 +170,15 @@ async function getItemsByPage(view_family_name, view_name, page_num, limit_num){
   };
 
   const doclist = await satellite_db.view(view_family_name, view_name, queryOptions);
+  console.log(typeof page_num, 'args')
+  console.log(doclist, 'doclist')
   let temp =[];
   for(let i of doclist.rows){
     let obj = i.doc;
     obj.count = doclist.total_rows;
     temp.push(obj)
   }
+  console.log(temp, 'temp')
   return temp 
 }
 
