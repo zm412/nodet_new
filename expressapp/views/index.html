@@ -126,23 +126,19 @@
             }
           }
       `}
+
     fetchDataPost(obj).then(doc => {
       let n = doc.data.getAllItems;
       set_country = n.filter(n => n.type == 'country')
       set_satellite = n.filter(n => n.type == 'satellite')
-      console.log(set_country, set_satellite, 'data')
-      console.log(set_country, 'countries')
     
-      console.log( document.querySelector('#country').onchange = (e) =>  chooseName(e.target) ) 
-      add_satellite();
    
-    let ul_c = document.querySelector('#country_l');
-    let ul_s = document.querySelector('#satellite_l');
-    let close_button_c = document.querySelector('#close_list_c');
-    let close_button_s = document.querySelector('#close_list_s');
+      let ul_c = document.querySelector('#country_l');
+      let ul_s = document.querySelector('#satellite_l');
+      let close_button_c = document.querySelector('#close_list_c');
+      let close_button_s = document.querySelector('#close_list_s');
 
       close_button_c.onclick = (e) => { 
-
         showList(set_country, document.querySelector('#country_l') , 'country');
         ul_c.classList.toggle('hidden_block') 
       };
@@ -151,39 +147,30 @@
         showList(set_satellite, document.querySelector('#satellite_l') , 'satellite');
         ul_s.classList.toggle('hidden_block');
       }
+
       getOptions(set_country, '#country')
       getOptions(set_country, '#country1')
       getOptions(set_country, '#country2')
-    })
 
-function chooseName(selectElem, varname){
-  const filtered = Array.from(selectElem.options).filter(el => el.selected).map(el => el.value);
-  console.log(filtered, 'value')
-  return filtered[0]
-}
+    }).catch(err => console.log(err))
+
+    function chooseName(selectElem, varname){
+      const filtered = Array.from(selectElem.options).filter(el => el.selected).map(el => el.value);
+      return filtered[0]
+    }
 
 
-function add_satellite(){
-  let value1, value2, value3;
-    
-  document.querySelector('#country').onchange = (e) => value1 = chooseName(e.target)    
-  document.querySelector('#country1').onchange = (e) =>value2 = chooseName(e.target) 
-  document.querySelector('#country2').onchange = (e) =>value3 =   chooseName(e.target) 
-  console.log(value1, value2, value3, 'sel')
-
-}
-
-function fetchDataPost(obj){
-  return fetch('/graphql', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify(obj)
-  })
-    .then(r => r.json())
-}
+    function fetchDataPost(obj){
+      return fetch('/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(obj)
+      })
+        .then(r => r.json())
+    }
 
 
   function showList(arr, par, type){
@@ -196,14 +183,12 @@ function fetchDataPost(obj){
 
   for(let elem of document.querySelectorAll('.del_item')){
     elem.onclick = deleteItem;
-    console.log(type, 'type0')
   }
 
 
   function deleteItem(e){
     let _id = e.target.dataset.id;
     let _rev = e.target.dataset.rev;
-    console.log(type, 'type')
     let sample = type == 'country'? 'deleteCountry': 'deleteSatellite' ;
     let query = `mutation ${sample}($_id: ID!, $_rev: String!){
       ${sample}(input: { _id: $_id, _rev: $_rev }){
@@ -212,76 +197,53 @@ function fetchDataPost(obj){
     }`;
     
     let param_obj = {query, variables: { _id, _rev }};
-    fetchDataPost(param_obj).then(doc => {console.log(doc, 'lLLLLLKJLKJLJLJLJ')})
+    fetchDataPost(param_obj).then(doc => doc).catch(err => console.log(err))
+  }
+}
+
+
+  document.querySelector('#add_satellite').onsubmit = async (e) => {
+    e.preventDefault();
+    let arr = [chooseName(document.querySelector('#country')), 
+                chooseName(document.querySelector('#country1')),
+                chooseName(document.querySelector('#country2'))
+    ];
+    let country_id = [ ...new Set(arr) ].filter(n => n != 'null')
+    let _id = document.querySelector('#sat_id').value;
+    let name = document.querySelector('#sat_name').value;
+   
+    let query = `mutation createSatellite($_id: ID!, $name: String!, $country_id: [ID!]){
+      createSatellite(input: { _id: $_id, name: $name, country_id: $country_id }){
+          name
+        }
+    }`;
+    let param_obj = {query, variables: { _id, name, country_id }};
+    fetchDataPost(param_obj).then(doc => doc).catch(err=>console.log(err))
   }
 
 
-}
+  document.querySelector('#add_country').onsubmit = (e) => {
+    e.preventDefault();
+    let _id = document.querySelector('#spec_id_country').value;
+    let name = document.querySelector('#name_country').value;
+    
+    let query = `mutation createCountry($_id: ID!, $name: String!){
+      createCountry(input: { _id: $_id, name: $name }){
+          name
+        }
+    }`;
+    let param_obj = {query, variables: { _id, name }};
+    fetchDataPost(param_obj).then(doc => doc).catch(err => console.log(err))
+  }
 
 
-document.querySelector('#add_satellite').onsubmit = async (e) => {
-  console.log(e, 'e')
-  e.preventDefault();
-  let arr = [chooseName(document.querySelector('#country')), 
-              chooseName(document.querySelector('#country1')),
-              chooseName(document.querySelector('#country2'))
-  ];
-  let country_id = [ ...new Set(arr) ].filter(n => n != 'null')
-  
-  console.log(arr, 'sel')
-
-  let _id = document.querySelector('#sat_id').value;
-  let name = document.querySelector('#sat_name').value;
-  console.log(_id, name, 'idname')
- 
-  let query = `mutation createSatellite($_id: ID!, $name: String!, $country_id: [ID!]){
-    createSatellite(input: { _id: $_id, name: $name, country_id: $country_id }){
-        name
-      }
-  }`;
-  let param_obj = {query, variables: { _id, name, country_id }};
-console.log(param_obj, 'param_obj')
-  fetchDataPost(param_obj).then(doc => {console.log(doc, 'IIIIIIIIIIIIIIIIIIIIIIIIIIi')})
-
-
-/*
-  let _id = document.querySelector('#spec_id_country').value;
-  let name = document.querySelector('#name_country').value;
-  
-  let query = `mutation createCountry($_id: ID!, $name: String!){
-    createCountry(input: { _id: $_id, name: $name }){
-        name
-      }
-  }`;
-  let param_obj = {query, variables: { _id, name }};
-  fetchDataPost(param_obj).then(doc => {console.log(doc, 'lLLLLLKJLKJLJLJLJ')})
-*/
-}
-
-
-document.querySelector('#add_country').onsubmit = (e) => {
-  e.preventDefault();
-  let _id = document.querySelector('#spec_id_country').value;
-  let name = document.querySelector('#name_country').value;
-  
-  let query = `mutation createCountry($_id: ID!, $name: String!){
-    createCountry(input: { _id: $_id, name: $name }){
-        name
-      }
-  }`;
-  let param_obj = {query, variables: { _id, name }};
-  fetchDataPost(param_obj).then(doc => {console.log(doc, 'lLLLLLKJLKJLJLJLJ')})
-}
-
-
-function getOptions(arr, selectorSelect){
-  console.log(arr, 'arr')
-   let elemsList = arr.reduce((str, n) => {
-      return str += `
-        <option value="${n._id}" data-rev="${n._rev}">${n.name}</option>
-    `}, '')
-  document.querySelector(selectorSelect).innerHTML += elemsList
-}
+  function getOptions(arr, selectorSelect){
+     let elemsList = arr.reduce((str, n) => {
+        return str += `
+          <option value="${n._id}" data-rev="${n._rev}">${n.name}</option>
+      `}, '')
+    document.querySelector(selectorSelect).innerHTML += elemsList
+  }
 
 
 

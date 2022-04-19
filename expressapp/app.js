@@ -19,35 +19,7 @@ app.set('view engine', 'html');
 app.engine('html', require('hbs').__express);
 const temp = async () => {
   const dblist = await nano.db.list()
-  //const doclist = await satellite_db.get('Lara',{include_docs: true})
   const doclist = await satellite_db.list({include_docs: true})
-  //console.log(doclist.rows.map(n=>n.doc), 'doclist')
-
-      /*
-  const response = await satellite_db.destroy('_design/satellite_n', '3-438862191d9b62757eeffb86eba22e5f', (err, res)=>{
-    console.log(err, 'err')
-    console.log(res, 'res')
-  })
-    await satellite_db.insert({
-  "views": {
-    "all_data_type": {
-      "map": "function (doc) {\n  if(doc.type)  emit(doc._id, doc);\n}"
-    },
-    "by_country": {
-      "map": "function (doc) {\n  if(doc.type == 'country')  emit(doc._id, doc);\n}"
-    },
-    "by_satellite": {
-      "map": "function (doc) {\n  if(doc.type == 'satellite')  emit(doc._id, doc);\n}"
-    }
-  }},"_design/satellite_n", function (error, response) {
-    console.log("yay");
-  }
-  )
-
-  */
-  //const response = await satellite_db.insert({ _id: '_design/satellite_n', _rev: '3-438862191d9b62757eeffb86eba22e5f', views.all_data_types:{ } })
-      //  const doc = await satellite_db.get('_design/satellite_n')
-       // console.log(doc, 'doc')
 }
 
 temp()

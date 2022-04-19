@@ -1,11 +1,11 @@
 var nano = require('nano')('http://admin:4455@db:5984');
 var satellite_db = nano.use('satellite_db');
+const fs=require("fs")
 
 
 
 const resolvers = {
 
- 
   Query: {
 
     getAllItems: async () => {
@@ -13,30 +13,25 @@ const resolvers = {
         reduce: false,
         include_docs: true
       }
-      let doc = await satellite_db.view('satellite_n', 'all_data_type', queryOptions)
+      let doc = await satellite_db.view('satellite_n', 'all_data_type', queryOptions);
 
-      //console.log(doc, 'doclist')
       return doc.rows.map(n=>n.doc);
     },
 
-      searchItemByName: async(_, args) => {
-        console.log(args, 'str')
-          const q = {
-             "selector": {
-                "_id": { "$gt": null },
-                "name": { "$regex": '^' + args.str  }
-               }
-            }
-          let doc = await satellite_db.find(q);
+    searchItemByName: async(_, args) => {
+        const q = {
+           "selector": {
+              "_id": { "$gt": null },
+              "name": { "$regex": '^' + args.str  }
+             }
+          }
+        let doc = await satellite_db.find(q);
 
-          console.log(doc, 'doc')
-          return doc.docs 
-        },
+        return doc.docs 
+      },
 
       getCountry: async(_, args) => {
-        console.log(args.id, 'id')
         const doc = await satellite_db.get(args.id, {include_docs: true});
-        console.log(doc, 'doc')
 
 
          const q = {
@@ -49,7 +44,6 @@ const resolvers = {
 
           let satellites = await satellite_db.find(q);
           doc.satellites =  satellites.docs
-          console.log(doc, 'country')
           return doc;
       },
 
@@ -59,7 +53,6 @@ const resolvers = {
       },
 
       getCountriesByPages: async(_, args) => {
-        console.log(args, 'args1')
         return getItemsByPage('satellite_n', 'by_country', args.page_num, args.limit_num)
       },
 
@@ -70,7 +63,6 @@ const resolvers = {
   }, 
    SearchResult: {
     __resolveType(obj) {
-      //console.log(obj, 'obj')
       if (obj.type == 'country') {
         return 'Country';
       }
@@ -84,16 +76,20 @@ const resolvers = {
   Mutation: {
 
    createCountry: async(_, args) => {
-     console.log(args, 'args')
-    let data = { _id: args.input._id, type: 'country', name: args.input.name };
-    let doc = await satellite_db.insert(data, {include_docs: true})
-    let docslkjl = await satellite_db.get(args.input._id, {include_docs: true})
-    console.log(docslkjl, 'docslkjl')
-     return docslkjl;
+    let regexOne = /^([a-zA-Zа-яёА-ЯЁ\- ])+$/;
+    const name = args.input.name.trim();
+    if(regexOne.test(name)){
+      let data = { _id: args.input._id, type: 'country', name: args.input.name };
+      let doc = await satellite_db.insert(data, {include_docs: true})
+      let new_country = await satellite_db.get(args.input._id, {include_docs: true})
+      return new_country;   
+    }else{
+      throw new Error('`name` argument must be a string')
+    }
+   
    },
 
    createSatellite: async(_, args) => {
-     console.log(args, 'args')
 
      const q = {
          "selector": {
@@ -104,14 +100,11 @@ const resolvers = {
         }
       let doclist1 = await satellite_db.find(q);
 
-     console.log(doclist1, 'validatedarr')
      if(doclist1.docs.length > 0){
 
       let data = { type: 'satellite', name: args.input.name, countries: doclist1.docs };
-       console.log(data, 'data')
 
       let doc =  await satellite_db.insert(data, args.input._id)
-       console.log(doc, 'doc')
        return doc
      }
  },
@@ -133,7 +126,6 @@ const resolvers = {
         satellite_db.find(q).then(satellites => {
           satellites.docs.map(async satellite => {
             let new_countries_set = satellite.countries.filter((n, i) => n._id != args.input._id)
-            console.log(new_countries_set, 'LLLLLLLLLLLLLL')
             if(new_countries_set.length == 0 ){
               satellite_db.destroy(satellite._id, satellite._rev ).then(d => console.log(d)).catch(err => console.log(err))
             }else{
@@ -145,14 +137,12 @@ const resolvers = {
           })
         })
 
-      //console.log(country, 'country')
           return country 
       })
  },
 
    deleteSatellite: async(_, args) => {
      satellite_db.get(args.input._id).then(satellite => {
-       console.log(satellite, 'sate')
        satellite_db.destroy(args.input._id, args.input._rev).then(deleted_sat => deleted_sat)
    })
  },
@@ -170,15 +160,12 @@ async function getItemsByPage(view_family_name, view_name, page_num, limit_num){
   };
 
   const doclist = await satellite_db.view(view_family_name, view_name, queryOptions);
-  console.log(typeof page_num, 'args')
-  console.log(doclist, 'doclist')
   let temp =[];
   for(let i of doclist.rows){
     let obj = i.doc;
     obj.count = doclist.total_rows;
     temp.push(obj)
   }
-  console.log(temp, 'temp')
   return temp 
 }
 

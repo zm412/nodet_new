@@ -34,16 +34,13 @@ function fetchDataPost(obj){
               _id, name, type, count
             }
         }`;
-        console.log(query, 'query')
 
         let param_obj = {query, variables: { page_num: Number(page_num), limit: Number(limit) }};
 
         const _res_json = fetchDataPost(param_obj).then(doc => {
-console.log(doc.data[sample][0].count)
             doc.data[sample].map(n => createButton(items_list, `${n.name}, id: ${n._id}`, 'li'));
             quantity = doc.data[sample][0].count;
             get_pagination(paginatSelector, limit, quantity, page_num, funcPrev, funcNext);
-console.log(quantity, 'quantity')
         })
 
         const funcPrev = () => {
@@ -56,7 +53,6 @@ console.log(quantity, 'quantity')
           get_list_items();
         }
 
-console.log(quantity, 'quant')
         }
     }
 
@@ -99,7 +95,6 @@ console.log(quantity, 'quant')
           e.preventDefault();
           let sample = 'searchItemByName';
           let str = document.querySelector('#search_key').value;
-          console.log(str, 'str')
           let query = `query ${sample}($str: String!){
             ${sample}(str: $str){
               ...on Satellite{
@@ -113,7 +108,6 @@ console.log(quantity, 'quant')
 
         let param_obj = {query, variables: { str }};
         fetchDataPost(param_obj).then(doc => {
-console.log(doc, 'doc')
             doc.data[sample].map(n => createButton(ul, `${n.name}, id: ${n._id}`, 'li'));
         })
 
@@ -136,7 +130,6 @@ console.log(doc, 'doc')
 
         let param_obj = {query, variables: { id }};
           fetchDataPost(param_obj).then(doc => {
-          console.log(doc, 'doc')
           let n = doc.data[sample];
           createButton(div, `${n.name}, id: ${n._id}`, 'p');
           if(n.satellites.length > 0){
@@ -161,7 +154,6 @@ console.log(doc, 'doc')
 
         let param_obj = {query, variables: { id }};
           fetchDataPost(param_obj).then(doc => {
-            console.log(doc, 'doc')
           let n = doc.data[sample];
           createButton(div, `${n.name}, id: ${n._id}`, 'span');
           if(n.countries.length > 0){

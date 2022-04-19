@@ -2,17 +2,15 @@
 
 ## Distinctiveness and complexity:
 
-nodet is simple fullstack project based on NodeJS (ExpressJS) with
-frontend on hbs+JS, pack by docker-compose. Frontend side has one main page (/views/index.html)
-and one page for showing results of some of the requests.
-(/views/objectsList.html).
+nodet_test is simple fullstack project based on NodeJS (ExpressJS) with
+frontend on JS, pack by docker-compose. Frontend side has one page (/views/index.html).
 
 During the development, the following functionality was implemented:
 
 ### Query elements by unique id
 Request forms by id are located on the main page under the headings:
-* Find country by id /api/country
-* Find satellite by id /api/satellite
+* Find country by id
+* Find satellite by id
 
 
 ### Viewing the list of elements of each type by page
@@ -22,11 +20,8 @@ Output is available in the amount of 3, 5 or 10 elements per page).  Forms for r
 
 ###  Getting related elements
 The type of connection of conditional "entities" in this application is similar
-OneToMany (One satellite is launched by one country, however each country
-can launch many satellites), so after request a country by id we
-get all the satellites launched by this country, and after we request of satellite -
-we will get the country that launched it. Information is displayed in
-other page, which also has a back button.
+ManyToMany (One satellite is launched by many countries, and each country
+can launch many satellites).
 
 ### Search for elements by an arbitrary string key.
 Search form is in the block: 
@@ -39,16 +34,17 @@ searched string will also be displayed in the list of results.
 ## Additional Methods(development)
 
 ##### Adding a country 
-**Test post to /api/add_country**
+**Add country**
 
 ##### Adding a satellite 
-**Test post to /api/add_satellite**
+**Add satellite**
 
 ##### Open lists of all elements of type (with button Delete) 
 **Open List of countries**
 **Open List of satellites**
 
 ##### Delite element 
+**If the satellite has no countries left, the satellite is removed from the database**
 
 ## Files: 
 * docker-compose.yml
@@ -59,18 +55,18 @@ searched string will also be displayed in the list of results.
 * expressapp/Dockerfile - settings for nodeapp-container
 * expressapp/views - folder for html pages
 * expressapp/public - folder for js and css   
-* expressapp/txt.txt - file with data JSON
+* expressapp/json_data.txt - file with data JSON
 
 
 ## Installation and configuration
 
 1. Clone the git repository
 
-$git clone https://github.com/zm412/nodet.git
+$git clone https://github.com/zm412/nodet_new.git
 
-2. Go to the nodet folder
+2. Go to the nodet_new folder
 
-$cd nodet 
+$cd nodet_new 
 
 3. Enter the instructions 
 
