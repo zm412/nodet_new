@@ -1,4 +1,3 @@
-
 var schema = `
     type Country {
         _id: ID!
@@ -15,7 +14,7 @@ var schema = `
         type: String!
         name: String!
         country_id: [ID]
-        countries: [ Country!]
+        countries: [ ID!]
     }
 
 
@@ -43,6 +42,7 @@ var schema = `
       getSatellite(id: ID): Satellite
       getSatellitesByPages(page_num: Int!, limit_num: Int!): [ Satellite ]
       getCountriesByPages(page_num: Int!, limit_num: Int!): [ Country ]
+      getSatellitesByCountryId(country_id: ID!): [Satellite]
       searchItemByName(str: String): [ SearchResult ]
     }
 
@@ -52,10 +52,6 @@ var schema = `
       deleteCountry(input: RemoveItemInput): Country 
       deleteSatellite(input: RemoveItemInput): Satellite 
     }
-`
+`;
 
-
-
-module.exports = schema
-
-
+module.exports = schema;
