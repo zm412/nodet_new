@@ -31,13 +31,18 @@ const resolvers = {
     },
 
     getCountry: async (_, args) => {
-      return satellite_db.get(args.id, { include_docs: true });
+      console.log(args, "args");
+      if (args.id.startsWith("spec-")) {
+        let doc = satellite_db.get(args.id, { include_docs: true });
+        console.log(doc, "getCountry");
+        return doc;
+      }
     },
 
     getSatellite: async (_, args) => {
-      let doc = await satellite_db.get(args.id, { include_docs: true });
-      console.log(doc, "getDoc");
-      return doc;
+      if (args.id.startsWith("sat-")) {
+        return satellite_db.get(args.id, { include_docs: true });
+      }
     },
 
     getCountriesByPages: async (_, args) => {
@@ -59,11 +64,6 @@ const resolvers = {
     },
 
     getSatellitesByCountryId: async (_, args) => {
-      const doc = await satellite_db.get(args.country_id, {
-        include_docs: true,
-      });
-      console.log();
-
       const q = {
         selector: {
           countries: {
@@ -73,6 +73,7 @@ const resolvers = {
           },
         },
       };
+
       let docs = await satellite_db.find(q);
       console.log(docs, "docs");
       return docs.docs;
@@ -95,12 +96,15 @@ const resolvers = {
       let regexOne = /^([a-zA-Zа-яёА-ЯЁ\- ])+$/;
       const name = args.input.name.trim();
       if (regexOne.test(name)) {
+        const gen_id = await nano.uuids();
+        let new_id = "spec-" + gen_id.uuids[0];
         let data = {
-          _id: args.input._id,
+          _id: new_id,
           type: "country",
           name: args.input.name,
         };
         let doc = await satellite_db.insert(data, { include_docs: true });
+        console.log(doc, "doc");
         return doc;
       } else {
         throw new Error("`name` argument must be a string");
@@ -118,6 +122,8 @@ const resolvers = {
       let doclist1 = await satellite_db.find(q);
 
       if (doclist1.docs.length > 0) {
+        const gen_id = await nano.uuids();
+        let new_id = "sat-" + gen_id.uuids[0];
         let data = {
           type: "satellite",
           name: args.input.name,
@@ -125,7 +131,7 @@ const resolvers = {
         };
         console.log(data, "data");
 
-        let doc = await satellite_db.insert(data, args.input._id);
+        let doc = await satellite_db.insert(data, new_id);
         console.log(doc, "doc");
         return doc;
       }
@@ -141,7 +147,9 @@ const resolvers = {
             const q = {
               selector: {
                 countries: {
-                  $elemMatch: country,
+                  $elemMatch: {
+                    $eq: args.country_id,
+                  },
                 },
               },
             };
@@ -149,7 +157,7 @@ const resolvers = {
             satellite_db.find(q).then((satellites) => {
               satellites.docs.map(async (satellite) => {
                 let new_countries_set = satellite.countries.filter(
-                  (n, i) => n._id != args.input._id
+                  (n) => n != args.input._id
                 );
                 if (new_countries_set.length == 0) {
                   satellite_db

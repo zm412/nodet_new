@@ -19,12 +19,10 @@ var schema = `
 
 
     input CountryInput {
-        _id: ID! 
         name: String!
     }
 
     input SatelliteInput {
-        _id: ID! 
         name: String!
         country_id: [ID!] 
     }
@@ -38,7 +36,7 @@ var schema = `
 
     type Query {
       getAllItems: [SearchResult]
-      getCountry(id: ID): Country 
+      getCountry(id: ID!): Country 
       getSatellite(id: ID): Satellite
       getSatellitesByPages(page_num: Int!, limit_num: Int!): [ Satellite ]
       getCountriesByPages(page_num: Int!, limit_num: Int!): [ Country ]

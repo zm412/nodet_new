@@ -152,25 +152,29 @@ const countries = (() => {
     div.innerHTML = "";
     let sample = "getCountry";
     let id = document.querySelector("#id_country").value;
-    let query = `query ${sample}($id: ID!){
-          ${sample}(id: $id){
-            name, _id, satellites {
-                name, _id
-            }
+    let query = `query getCountry ($id: ID!){
+          getCountry(id: $id){
+            name, _id
+            },
 
+          getSatellitesByCountryId(country_id: $id){
+            name, _id
           }
-      }`;
+      }
+`;
 
     let param_obj = { query, variables: { id } };
-    fetchDataPost(param_obj).then((doc) => {
-      let n = doc.data[sample];
-      createButton(div, `${n.name}, id: ${n._id}`, "p");
-      if (n.satellites.length > 0) {
-        n.satellites.map((p) =>
-          createButton(div, `${p.name}, id: ${p._id}`, "li")
-        );
-      }
-    });
+    fetchDataPost(param_obj)
+      .then((doc) => {
+        console.log(doc, "doc");
+        let n = doc.data.getCountry;
+        let sats = doc.data.getSatellitesByCountryId;
+        createButton(div, `${n.name}, id: ${n._id}`, "p");
+        if (sats.length > 0) {
+          sats.map((p) => createButton(div, `${p.name}, id: ${p._id}`, "li"));
+        }
+      })
+      .catch((err) => console.log(err, "err"));
   };
 
   document.querySelector("#get_satellite").onsubmit = (e) => {

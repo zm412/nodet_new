@@ -72,7 +72,6 @@
   <h4>Add country</h4>
   <form action="" id="add_country" class="border">
     <label for="title" >Country</label>
-    <input type="text" id="spec_id_country" name="id" value="" placeholder="id"><br>
     <input type="text" id="name_country" name="name" value="" placeholder="name"><br>
     <input type="submit" value="Add country">
   </form>
@@ -81,7 +80,6 @@
   <h4>Add satellite</h4>
   <form method="post" action="" id="add_satellite" class="border">
     <label for="sat_name">Satellite name</label>
-    <input type="text" id="sat_id" value="" placeholder="id"><br>
     <input type="text" id="sat_name" value="" placeholder="name"><br>
     <label for="country">Country</label>
       <select id="country" name="country"> 
@@ -209,30 +207,28 @@
                 chooseName(document.querySelector('#country2'))
     ];
     let country_id = [ ...new Set(arr) ].filter(n => n != 'null')
-    let _id = document.querySelector('#sat_id').value;
     let name = document.querySelector('#sat_name').value;
    
-    let query = `mutation createSatellite($_id: ID!, $name: String!, $country_id: [ID!]){
-      createSatellite(input: { _id: $_id, name: $name, country_id: $country_id }){
+    let query = `mutation createSatellite($name: String!, $country_id: [ID!]){
+      createSatellite(input: {name: $name, country_id: $country_id }){
           name
         }
     }`;
-    let param_obj = {query, variables: { _id, name, country_id }};
+    let param_obj = {query, variables: {name, country_id }};
     fetchDataPost(param_obj).then(doc => doc).catch(err=>console.log(err))
   }
 
 
   document.querySelector('#add_country').onsubmit = (e) => {
     e.preventDefault();
-    let _id = document.querySelector('#spec_id_country').value;
     let name = document.querySelector('#name_country').value;
     
-    let query = `mutation createCountry($_id: ID!, $name: String!){
-      createCountry(input: { _id: $_id, name: $name }){
+    let query = `mutation createCountry($name: String!){
+      createCountry(input: {name: $name }){
           name
         }
     }`;
-    let param_obj = {query, variables: { _id, name }};
+    let param_obj = {query, variables: { name }};
     fetchDataPost(param_obj).then(doc => doc).catch(err => console.log(err))
   }
 
