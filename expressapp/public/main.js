@@ -130,7 +130,7 @@ const countries = (() => {
     let query = `query ${sample}($str: String!){
             ${sample}(str: $str){
               ...on Satellite{
-                _id, name, country_id
+                _id, name
               }
               ...on Country{
                 _id, name
@@ -166,7 +166,6 @@ const countries = (() => {
     let param_obj = { query, variables: { id } };
     fetchDataPost(param_obj)
       .then((doc) => {
-        console.log(doc, "doc");
         let n = doc.data.getCountry;
         let sats = doc.data.getSatellitesByCountryId;
         createButton(div, `${n.name}, id: ${n._id}`, "p");
@@ -185,7 +184,7 @@ const countries = (() => {
     let id = document.querySelector("#id_satellite").value;
     let query = `query ${sample}($id: ID!){
           ${sample}(id: $id){
-            name, _id, countries {
+            name, _id, countries_docs {
             name, _id
             }
           }
@@ -195,8 +194,8 @@ const countries = (() => {
     fetchDataPost(param_obj).then((doc) => {
       let n = doc.data[sample];
       createButton(div, `${n.name}, id: ${n._id}`, "span");
-      if (n.countries.length > 0) {
-        n.countries.map((p) =>
+      if (n.countries_docs.length > 0) {
+        n.countries_docs.map((p) =>
           createButton(div, `${p.name}, id: ${p._id}`, "li")
         );
       }

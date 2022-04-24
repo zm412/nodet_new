@@ -13,8 +13,8 @@ var schema = `
         count: Int 
         type: String!
         name: String!
-        country_id: [ID]
-        countries: [ ID!]
+        country_docs: [Country]
+        countries: [ID!]
     }
 
 

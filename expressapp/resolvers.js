@@ -15,6 +15,12 @@ const resolvers = {
         queryOptions
       );
 
+      /*
+      fs.writeFile("json_data.txt", JSON.stringify(doc), function (error) {
+        console.log(error, "error");
+      });
+      */
+
       return doc.rows.map((n) => n.doc);
     },
 
@@ -31,17 +37,27 @@ const resolvers = {
     },
 
     getCountry: async (_, args) => {
-      console.log(args, "args");
       if (args.id.startsWith("spec-")) {
         let doc = satellite_db.get(args.id, { include_docs: true });
-        console.log(doc, "getCountry");
         return doc;
       }
     },
 
     getSatellite: async (_, args) => {
       if (args.id.startsWith("sat-")) {
-        return satellite_db.get(args.id, { include_docs: true });
+        let satellite = await satellite_db.get(args.id, { include_docs: true });
+
+        const q = {
+          selector: {
+            _id: {
+              $or: satellite.countries,
+            },
+          },
+        };
+        let countries = await satellite_db.find(q);
+        satellite.countries_docs = countries.docs;
+        console.log(countries, "countries");
+        return satellite;
       }
     },
 
@@ -75,10 +91,10 @@ const resolvers = {
       };
 
       let docs = await satellite_db.find(q);
-      console.log(docs, "docs");
       return docs.docs;
     },
   },
+
   SearchResult: {
     __resolveType(obj) {
       if (obj.type == "country") {
@@ -104,7 +120,6 @@ const resolvers = {
           name: args.input.name,
         };
         let doc = await satellite_db.insert(data, { include_docs: true });
-        console.log(doc, "doc");
         return doc;
       } else {
         throw new Error("`name` argument must be a string");
@@ -129,14 +144,10 @@ const resolvers = {
           name: args.input.name,
           countries: doclist1.docs.map((n) => n._id),
         };
-        console.log(data, "data");
 
         let doc = await satellite_db.insert(data, new_id);
-        console.log(doc, "doc");
         return doc;
       }
-
-      console.log("NO", "doc");
     },
 
     deleteCountry: async (_, args) => {
