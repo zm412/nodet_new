@@ -1,14 +1,14 @@
 FROM node:16
 
-WORKDIR /code
+WORKDIR /code/expressap
 
-COPY package.json /code/package.json 
+COPY package.json package.json 
 
 
-COPY . /code
+COPY . . 
 
 RUN npm install
 
-EXPOSE 5000
+EXPOSE 4000
 
-#CMD npm run dev 
+CMD npm run start 
