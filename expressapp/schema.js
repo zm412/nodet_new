@@ -5,7 +5,6 @@ const typeDefs = gql`
     _id: ID!
     _rev: String
     count: Int
-    type: String!
     name: String!
     satellite: [Satellite]
   }
@@ -13,7 +12,6 @@ const typeDefs = gql`
     _id: ID!
     _rev: String
     count: Int
-    type: String!
     name: String!
     countries: [ID!]
     country: [Country]
@@ -41,7 +39,6 @@ const typeDefs = gql`
     getSatellite(id: ID): Satellite
     getSatellitesByPages(page_num: Int!, limit_num: Int!): [Satellite]
     getCountriesByPages(page_num: Int!, limit_num: Int!): [Country]
-    getSatellitesByCountryId(country_id: ID!): [Satellite]
     searchItemByName(str: String): [SearchResult]
   }
 

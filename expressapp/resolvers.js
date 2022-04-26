@@ -71,10 +71,11 @@ const resolvers = {
 
   SearchResult: {
     __resolveType(obj) {
-      if (obj.type == "country") {
+      console.log(obj, "obj");
+      if (obj._id.startsWith("spec-")) {
         return "Country";
       }
-      if (obj.type == "satellite") {
+      if (obj._id.startsWith("sat-")) {
         return "Satellite";
       }
       return null;
@@ -124,7 +125,6 @@ const resolvers = {
         let new_id = "spec-" + gen_id.uuids[0];
         let data = {
           _id: new_id,
-          type: "country",
           name: args.input.name,
         };
         let doc = await satellite_db.insert(data, { include_docs: true });
@@ -148,7 +148,6 @@ const resolvers = {
         const gen_id = await nano.uuids();
         let new_id = "sat-" + gen_id.uuids[0];
         let data = {
-          type: "satellite",
           name: args.input.name,
           countries: doclist1.docs.map((n) => n._id),
         };
@@ -187,7 +186,6 @@ const resolvers = {
                   let new_data = {
                     _id: satellite._id,
                     _rev: satellite._rev,
-                    type: satellite.type,
                     name: satellite.name,
                     countries: new_countries_set,
                   };

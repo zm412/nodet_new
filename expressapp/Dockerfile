@@ -4,7 +4,6 @@ WORKDIR /code/expressap
 
 COPY package.json package.json 
 
-
 COPY . . 
 
 RUN npm install
