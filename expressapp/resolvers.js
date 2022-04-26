@@ -46,17 +46,6 @@ const resolvers = {
     getSatellite: async (_, args) => {
       if (args.id.startsWith("sat-")) {
         let satellite = await satellite_db.get(args.id, { include_docs: true });
-
-        const q = {
-          selector: {
-            _id: {
-              $or: satellite.countries,
-            },
-          },
-        };
-        let countries = await satellite_db.find(q);
-        satellite.countries_docs = countries.docs;
-        console.log(countries, "countries");
         return satellite;
       }
     },
@@ -78,21 +67,6 @@ const resolvers = {
         args.limit_num
       );
     },
-
-    getSatellitesByCountryId: async (_, args) => {
-      const q = {
-        selector: {
-          countries: {
-            $elemMatch: {
-              $eq: args.country_id,
-            },
-          },
-        },
-      };
-
-      let docs = await satellite_db.find(q);
-      return docs.docs;
-    },
   },
 
   SearchResult: {
@@ -104,6 +78,40 @@ const resolvers = {
         return "Satellite";
       }
       return null;
+    },
+  },
+
+  Country: {
+    satellite: async (parent) => {
+      console.log(parent, "parentKKKK");
+      const q = {
+        selector: {
+          countries: {
+            $elemMatch: {
+              $eq: parent._id,
+            },
+          },
+        },
+      };
+
+      let docs = await satellite_db.find(q);
+      return docs.docs;
+    },
+  },
+
+  Satellite: {
+    country: async (parent) => {
+      console.log(parent.countries, "parentKKKK");
+      const q = {
+        selector: {
+          _id: {
+            $or: parent.countries,
+          },
+        },
+      };
+      let countries = await satellite_db.find(q);
+      console.log(countries, "countries");
+      return countries.docs;
     },
   },
 

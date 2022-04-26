@@ -2,7 +2,7 @@
   "name": "expressapp",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./index.js",
   "scripts": {
     "build": "babel index.js -d dist",
     "start": "nodemon index.js",
